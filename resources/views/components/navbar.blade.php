@@ -27,6 +27,28 @@
                     </a>
                 </li>
             @endforeach
+
+            @auth
+                <li class="ml-2 flex items-center gap-3 border-l border-brand-light/30 pl-3">
+                    <span class="text-sm text-brand-light">{{ auth()->user()->name }}</span>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="rounded-md px-3 py-2 text-sm font-medium text-brand-pale transition-colors hover:text-brand-light">
+                            Logout
+                        </button>
+                    </form>
+                </li>
+            @else
+                <li class="ml-2">
+                    <a
+                        href="{{ route('login') }}"
+                        class="rounded-md px-3 py-2 text-sm font-medium transition-colors
+                            {{ request()->routeIs('login') ? 'bg-brand-primary text-brand-pale' : 'text-brand-pale hover:text-brand-light' }}"
+                    >
+                        Login
+                    </a>
+                </li>
+            @endauth
         </ul>
     </nav>
 </header>
