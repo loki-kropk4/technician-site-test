@@ -1,6 +1,7 @@
 @php
     $navItems = [
         ['label' => 'Home', 'route' => 'home'],
+        ['label' => 'Entries', 'route' => 'entries.index'],
         // Add more links here as pages are added, e.g.:
         // ['label' => 'Services', 'route' => 'services'],
         // ['label' => 'About', 'route' => 'about'],

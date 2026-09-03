@@ -50,4 +50,9 @@ class User extends Authenticatable
             new UniqueAdminRole($ignoreUserId),
         ];
     }
+
+    public function entries()
+    {
+        return $this->hasMany(Entry::class, 'customer_id');
+    }
 }
