@@ -30,16 +30,20 @@ Route::resource('admin/users', AdminUserController::class)
     ->middleware('can:admin');
 
 // Entries: the list is open to any authenticated role (scoped to their own
-// entries for customers, see EntryController::index). Creating an entry
-// requires the `create-entry` Gate (customer only); editing/deleting
-// requires the `staff` Gate (technician or admin) — both defined in
-// AppServiceProvider. There is no standalone picture-delete route —
-// removing a picture is staged client-side in the edit form and only
-// takes effect when `update` actually saves (see EntryController::update).
+// entries for customers, see EntryController::index). Viewing a single
+// entry (`show`) is open to any authenticated role too, but a customer
+// gets a 403 on another customer's entry — that ownership check is inline
+// in EntryController::show, not a Gate, mirroring index()'s scoping.
+// Creating an entry requires the `create-entry` Gate (customer only);
+// editing/deleting requires the `staff` Gate (technician or admin) — both
+// defined in AppServiceProvider. There is no standalone picture-delete
+// route — removing a picture is staged client-side in the edit form and
+// only takes effect when `update` actually saves (see EntryController::update).
 Route::prefix('entries')->name('entries.')->group(function () {
     Route::get('/', [EntryController::class, 'index'])->name('index');
     Route::get('/create', [EntryController::class, 'create'])->middleware('can:create-entry')->name('create');
     Route::post('/', [EntryController::class, 'store'])->middleware('can:create-entry')->name('store');
+    Route::get('/{entry}', [EntryController::class, 'show'])->name('show');
     Route::get('/{entry}/edit', [EntryController::class, 'edit'])->middleware('can:staff')->name('edit');
     Route::put('/{entry}/edit', [EntryController::class, 'update'])->middleware('can:staff')->name('update');
     Route::delete('/{entry}', [EntryController::class, 'destroy'])->middleware('can:staff')->name('destroy');

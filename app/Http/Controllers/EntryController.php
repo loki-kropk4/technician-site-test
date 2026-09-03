@@ -35,6 +35,22 @@ class EntryController extends Controller
         return view('entries.form', ['entry' => null, 'statuses' => null]);
     }
 
+    public function show(Request $request, Entry $entry)
+    {
+        $user = $request->user();
+
+        // Same ownership scoping as index() — a customer may only open
+        // their own entry, even by guessing the URL directly.
+        if ($user->role === UserRole::Customer && $entry->customer_id !== $user->id) {
+            abort(403);
+        }
+
+        return view('entries.show', [
+            'entry' => $entry->load(['customer', 'entryStatus', 'pictures']),
+            'isStaff' => in_array($user->role, [UserRole::Technician, UserRole::Admin], true),
+        ]);
+    }
+
     public function store(StoreEntryRequest $request)
     {
         $entry = Entry::create([

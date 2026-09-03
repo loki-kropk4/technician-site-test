@@ -46,6 +46,78 @@ class EntryControllerTest extends TestCase
         $this->assertCount(3, $response->viewData('entries'));
     }
 
+    public function test_a_customer_can_view_their_own_entry(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $entry = Entry::factory()->create(['customer_id' => $customer->id, 'problem' => 'Screen is cracked.']);
+
+        $response = $this->actingAs($customer)->get(route('entries.show', $entry));
+
+        $response->assertOk();
+        $response->assertSee($entry->entry_id);
+        $response->assertSee($entry->name_unit);
+        $response->assertSee('Screen is cracked.');
+    }
+
+    public function test_a_customer_can_not_view_another_customers_entry(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $other = User::factory()->create(['role' => 'customer']);
+        $entry = Entry::factory()->create(['customer_id' => $other->id]);
+
+        $this->actingAs($customer)->get(route('entries.show', $entry))->assertForbidden();
+    }
+
+    public function test_a_technician_and_an_admin_can_view_any_entry(): void
+    {
+        $technician = User::factory()->technician()->create();
+        $admin = User::factory()->admin()->create();
+        $entry = Entry::factory()->create();
+
+        $this->actingAs($technician)->get(route('entries.show', $entry))->assertOk();
+        $this->actingAs($admin)->get(route('entries.show', $entry))->assertOk();
+    }
+
+    public function test_a_guest_is_redirected_to_login_from_the_show_page(): void
+    {
+        $entry = Entry::factory()->create();
+
+        $this->get(route('entries.show', $entry))->assertRedirect('/login');
+    }
+
+    public function test_edit_and_delete_buttons_on_the_show_page_are_staff_only(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $technician = User::factory()->technician()->create();
+        $entry = Entry::factory()->create(['customer_id' => $customer->id]);
+
+        $customerResponse = $this->actingAs($customer)->get(route('entries.show', $entry));
+        $customerResponse->assertDontSee(route('entries.edit', $entry));
+
+        $technicianResponse = $this->actingAs($technician)->get(route('entries.show', $entry));
+        $technicianResponse->assertSee(route('entries.edit', $entry));
+    }
+
+    public function test_the_show_page_reports_when_an_entry_has_no_pictures(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $entry = Entry::factory()->create();
+
+        $response = $this->actingAs($admin)->get(route('entries.show', $entry));
+
+        $response->assertSee('The customer of this entry did not insert any pictures');
+    }
+
+    public function test_the_customer_column_is_hidden_from_customers_but_shown_to_staff(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $admin = User::factory()->admin()->create();
+        Entry::factory()->create(['customer_id' => $customer->id]);
+
+        $this->actingAs($customer)->get(route('entries.index'))->assertDontSee('Customer');
+        $this->actingAs($admin)->get(route('entries.index'))->assertSee('Customer');
+    }
+
     public function test_update_changes_the_entrys_name_unit_problem_and_status(): void
     {
         $technician = User::factory()->technician()->create();

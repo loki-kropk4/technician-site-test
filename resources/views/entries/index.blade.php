@@ -25,7 +25,9 @@
                 <thead class="bg-brand-darkest">
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-pale">Entry ID</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-pale">Customer</th>
+                        @if ($isStaff)
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-pale">Customer</th>
+                        @endif
                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-pale">Unit</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-pale">Date &amp; Time</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-pale">Status</th>
@@ -40,8 +42,14 @@
                     @forelse ($entries as $entry)
                         <tr>
                             <td class="px-4 py-3 text-sm text-brand-darkest">{{ $entry->entry_id }}</td>
-                            <td class="px-4 py-3 text-sm text-brand-darkest">{{ $entry->customer->name }}</td>
-                            <td class="px-4 py-3 text-sm text-brand-darkest">{{ $entry->name_unit }}</td>
+                            @if ($isStaff)
+                                <td class="px-4 py-3 text-sm text-brand-darkest">{{ $entry->customer->name }}</td>
+                            @endif
+                            <td class="px-4 py-3 text-sm text-brand-darkest">
+                                <a href="{{ route('entries.show', $entry) }}" class="font-medium text-brand-primary hover:underline">
+                                    {{ $entry->name_unit }}
+                                </a>
+                            </td>
                             <td class="px-4 py-3 text-sm text-brand-darkest">
                                 {{ $entry->entry_date->format('M j, Y') }} &middot; {{ $entry->entry_time->format('H:i') }}
                             </td>
@@ -77,7 +85,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ $isStaff ? 6 : 5 }}" class="px-4 py-6 text-center text-sm text-brand-darkest/70">
+                            <td colspan="{{ $isStaff ? 6 : 4 }}" class="px-4 py-6 text-center text-sm text-brand-darkest/70">
                                 No entries yet.
                             </td>
                         </tr>
